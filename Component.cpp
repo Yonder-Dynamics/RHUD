@@ -15,8 +15,8 @@ Component::Component(Point p1, Point p2, Scalar fg, Scalar bg, double o, bool l)
 
 Component::Component() {
   p1 = Point(0,0);
-  p2 = Point(0,0);
-  size = Size(0,0);
+  p2 = Point(MIN_WIDTH,MIN_HEIGHT);
+  size = Size(MIN_WIDTH,MIN_HEIGHT);
   foreground = Scalar(0,0,0);
   background = Scalar(0,0,0);
   opacity = 0.0;
@@ -30,6 +30,24 @@ void Component::draw(Mat& frame) {
   resize(gui, gui_t, this->size);
 
   overlay(frame, gui_t, p1);
+}
+
+bool Component::containsPoint(int x, int y) {
+  return (x > p1.x && x < p1.x + size.width &&
+          y > p1.y && y < p1.y + size.height);
+}
+
+bool Component::inResizeZone(int x, int y) {
+  int buffer_x = (int)(RESIZE_PERCENT * size.width);
+  int buffer_y = (int)(RESIZE_PERCENT * size.height);
+
+  return (x >= p1.x + size.width - buffer_x &&
+          y >= p1.y + size.height - buffer_y);
+}
+
+void Component::setFrame(std::string file) {
+  Mat temp = imread(file, IMREAD_UNCHANGED); 
+  if (temp.data) gui = temp;
 }
 
 Point Component::getPoint() {
@@ -53,6 +71,10 @@ void Component::movePoint(double dx, double dy) {
 	}
 }
 
+Point Component::getBottomRightPoint() {
+  return Point(p1.x + size.width, p1.y + size.height);
+}
+
 Size Component::getSize() {
   return size;
 }
@@ -62,7 +84,7 @@ void Component::setSize(Size s) {
 }
 
 void Component::setSize(double width, double height) {
-	if (!locked) {
+	if (!locked && width >= MIN_WIDTH && height >= MIN_HEIGHT) {
 		size.width = width;
 		size.height = height;
 	}
@@ -70,8 +92,8 @@ void Component::setSize(double width, double height) {
 
 void Component::changeSize(double dw, double dh) {
 	if (!locked) {
-		size.width += dw;
-		size.height += dh;
+		if (size.width + dw >= MIN_WIDTH) size.width += dw;
+		if (size.height + dh >= MIN_HEIGHT) size.height += dh;
 	}
 }
 

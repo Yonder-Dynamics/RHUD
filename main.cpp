@@ -6,13 +6,14 @@
 #include "Component.h"
 
 std::string window_name = "Yonder Dynamics RHUD";
-int width = 1080;
-int height = 720;
+int width = 1920;
+int height = 1080;
 int source = 1;
 
 int prevX, prevY;
 bool mouse_down = false;
 int selected = -1;
+bool resize_mode = false;
 
 using namespace cv;
 
@@ -21,18 +22,14 @@ std::vector<Component*> comps;
 int getSelection(int x, int y) {
   if (comps.size() == 0) return -1;
 
-  if (selected >= 0) {
-    Point p = comps[selected]->getPoint();
-    Size s = comps[selected]->getSize();
-    if (x > p.x && x < p.x + s.width && y > p.y && y < p.y + s.height) 
-      return selected;
-  }
+  if (selected >= 0 && comps[selected]->containsPoint(x,y)) {
+    if (comps[selected]->inResizeZone(x,y)) resize_mode = true;
+    return selected;
+  } 
 
   for (int i = 0; i < comps.size(); ++i) {
-    Point p = comps[i]->getPoint();
-    Size s = comps[i]->getSize();
-
-    if (x > p.x && x < p.x + s.width && y > p.y && y < p.y + s.height) {
+    if (comps[i]->containsPoint(x,y)) {
+      if (comps[i]->inResizeZone(x,y)) resize_mode = true;
       return i;
     }
   }
@@ -42,17 +39,30 @@ int getSelection(int x, int y) {
 
 void mouseCallback(int event, int x, int y, int flags, void* userdata) {
   if (event == EVENT_LBUTTONDOWN) {
-    mouse_down = true;
-    prevX = x;
-    prevY = y;
     selected = getSelection(x,y);
+    if (flags == EVENT_FLAG_CTRLKEY) {
+      if (selected >= 0) comps.erase(comps.begin() + selected);
+    } else if (flags == EVENT_FLAG_SHIFTKEY) {
+      if (selected >= 0) comps[selected]->setFrame("hud.PNG");
+    } else {
+      mouse_down = true;
+      prevX = x;
+      prevY = y;
+    }
   } else if (event == EVENT_LBUTTONUP) {
     mouse_down = false;
+    resize_mode = false;
   } else if (event == EVENT_MOUSEMOVE && mouse_down) {
     int dx = x - prevX;
     int dy = y - prevY;
 
-    if (selected >= 0) comps[selected]->movePoint(dx, dy);
+    if (selected >= 0) {
+      if (resize_mode) {
+        comps[selected]->changeSize(dx, dy);
+      } else {
+        comps[selected]->movePoint(dx, dy);
+      }
+    }
 
     prevX = x;
     prevY = y;
@@ -65,6 +75,8 @@ int main(int argc, char** argv) {
   }
 
   VideoCapture feed(source);
+  feed.set(CV_CAP_PROP_FRAME_WIDTH, width);
+  feed.set(CV_CAP_PROP_FRAME_HEIGHT, height);
   if (!feed.isOpened()) {
     std::cerr << "Could not open video feed.\nDefaulting to black screen.\n";
   }
@@ -76,11 +88,11 @@ int main(int argc, char** argv) {
   setMouseCallback(window_name, mouseCallback, NULL);
 
   comps.push_back(new Component(Point(10, 10), Point(310, 250), 
-    Scalar(255, 255, 255), Scalar(0, 255, 255)));
+        Scalar(255, 255, 255), Scalar(0, 255, 255)));
   comps.push_back(new Component(Point(400, 50), Point(555, 175), 
-    Scalar(255, 255, 255), Scalar(0, 255, 255), 0.67));
+        Scalar(255, 255, 255), Scalar(0, 255, 255), 0.67));
   comps.push_back(new Component(Point(700, 100), Size(600, 450), 
-    Scalar(255, 255, 255), Scalar(0, 255, 255), 1.0));
+        Scalar(255, 255, 255), Scalar(0, 255, 255), 1.0));
 
   Mat frame;
   while(true) {
@@ -99,7 +111,7 @@ int main(int argc, char** argv) {
       c->draw(frame);
     }
     if (selected >= 0) comps[selected]->draw(frame);
-    
+
     imshow(window_name, frame);
 
     if (waitKey(10) == 27) {

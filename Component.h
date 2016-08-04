@@ -11,6 +11,10 @@ using namespace cv;
 
 class Component {
 protected:
+  const static int MIN_HEIGHT = 75;
+  const static int MIN_WIDTH = 100;
+  constexpr static float RESIZE_PERCENT = 0.05f;
+
   Mat gui;
 	Point p1, p2; 
   Size size;
@@ -28,11 +32,15 @@ public:
 	~Component();
 
 	void draw(Mat& frame);
+  bool containsPoint(int x, int y);
+  bool inResizeZone(int x, int y);
+  void setFrame(std::string file);
   
   Point getPoint();
 	void setPoint(Point p);
 	void setPoint(double x, double y);
 	void movePoint(double dx, double dy);
+  Point getBottomRightPoint();
 
   Size getSize();
 	void setSize(Size s);
