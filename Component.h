@@ -22,12 +22,15 @@ protected:
 	Scalar background;
 	double opacity;
 	bool locked;
+  std::string data;
   
   void overlay(Mat& bg, const Mat& fg, Point p);
 
 public:
-  Component(Point p1, Point p2, Scalar fg, Scalar bg, double o=0.5, bool l=false);
-  Component(Point p1, Size s, Scalar fg, Scalar bg, double o=0.5, bool l=false);
+  Component(Point p1, Point p2, std::string data, 
+    Scalar fg, Scalar bg, double o=0.5, bool l=false);
+  Component(Point p1, Size s, std::string data,
+    Scalar fg, Scalar bg, double o=0.5, bool l=false);
 	Component();
 	~Component();
 

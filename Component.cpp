@@ -1,14 +1,14 @@
 #include "Component.h"
 
-Component::Component(Point p1, Size s, Scalar fg, Scalar bg, double o, bool l) :
-    p1(p1), size(s), foreground(fg), background(bg), opacity(o), locked(l) {
+Component::Component(Point p1, Size s, std::string data, Scalar fg, Scalar bg, double o, bool l) :
+    p1(p1), size(s), data(data), foreground(fg), background(bg), opacity(o), locked(l) {
   gui = imread("frame.PNG", IMREAD_UNCHANGED);
   p2 = Point(p1.x + size.width, p1.y + size.height);
 }
 
 
-Component::Component(Point p1, Point p2, Scalar fg, Scalar bg, double o, bool l) :
-    p1(p1), p2(p2), foreground(fg), background(bg), opacity(o), locked(l) {
+Component::Component(Point p1, Point p2, std::string data, Scalar fg, Scalar bg, double o, bool l) :
+    p1(p1), p2(p2), data(data), foreground(fg), background(bg), opacity(o), locked(l) {
   gui = imread("frame.PNG", IMREAD_UNCHANGED);
   size = Size(p2.x - p1.x, p2.y - p1.y);
 }
@@ -28,8 +28,9 @@ Component::~Component() {}
 void Component::draw(Mat& frame) {
   Mat gui_t; // temp gui mat for resize
   resize(gui, gui_t, this->size);
-
   overlay(frame, gui_t, p1);
+  putText(frame, data, Point(p1.x + size.width/10, p1.y + size.height/2), 
+    4, ((double)size.width / data.size() / 25), foreground);
 }
 
 bool Component::containsPoint(int x, int y) {

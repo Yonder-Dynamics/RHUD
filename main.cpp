@@ -88,11 +88,11 @@ int main(int argc, char** argv) {
   setMouseCallback(window_name, mouseCallback, NULL);
 
   comps.push_back(new Component(Point(10, 10), Point(310, 250), 
-        Scalar(255, 255, 255), Scalar(0, 255, 255)));
+        "Temperature: 90 C", Scalar(255, 255, 255), Scalar(0, 255, 255)));
   comps.push_back(new Component(Point(400, 50), Point(555, 175), 
-        Scalar(255, 255, 255), Scalar(0, 255, 255), 0.67));
+        "Wind Speed: 30 mph", Scalar(255, 255, 255), Scalar(0, 255, 255), 0.67));
   comps.push_back(new Component(Point(700, 100), Size(600, 450), 
-        Scalar(255, 255, 255), Scalar(0, 255, 255), 1.0));
+        "Humidity: 13 units", Scalar(255, 255, 255), Scalar(0, 255, 255), 1.0));
 
   Mat frame;
   while(true) {
