@@ -42,6 +42,7 @@ void mouseCallback(int event, int x, int y, int flags, void* userdata) {
     selected = getSelection(x,y);
     if (flags == EVENT_FLAG_CTRLKEY) {
       if (selected >= 0) comps.erase(comps.begin() + selected);
+      selected = -1;
     } else if (flags == EVENT_FLAG_SHIFTKEY) {
       if (selected >= 0) comps[selected]->setFrame("hud.PNG");
     } else {
